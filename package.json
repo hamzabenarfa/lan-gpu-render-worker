@@ -1,0 +1,13 @@
+{
+  "name": "lan-gpu-render-worker",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Local LAN HTTP render worker for offloading headless Chrome WebGL + NVENC video renders to a Windows NVIDIA GPU desktop",
+  "scripts": {
+    "start": "node worker.mjs",
+    "test-gpu": "node test-gpu.mjs"
+  },
+  "dependencies": {
+    "puppeteer-core": "^24.0.0"
+  }
+}

@@ -1,0 +1,7 @@
+node_modules/
+.token
+.env
+jobs/
+*.mp4
+*.tar.gz
+*.log
