@@ -45,7 +45,18 @@ if (-not (Test-Path $TokenFile)) {
 }
 $Token = (Get-Content $TokenFile -Raw).Trim()
 
-Write-Host "`n=== 5) Verifying GPU, NVENC, and Headless Chrome WebGL ==="
+Write-Host "`n=== 5) Installing Windows Startup auto-launch shortcut ==="
+$StartupDir = [Environment]::GetFolderPath("Startup")
+$ShortcutPath = Join-Path $StartupDir "LAN-GPU-Render-Worker.lnk"
+$WshShell = New-Object -ComObject WScript.Shell
+$Shortcut = $WshShell.CreateShortcut($ShortcutPath)
+$Shortcut.TargetPath = Join-Path $RepoDir "start-worker.bat"
+$Shortcut.WorkingDirectory = $RepoDir
+$Shortcut.WindowStyle = 7 # Minimized
+$Shortcut.Save()
+Write-Host "Startup shortcut created: $ShortcutPath"
+
+Write-Host "`n=== 6) Verifying GPU, NVENC, and Headless Chrome WebGL ==="
 node (Join-Path $RepoDir "test-gpu.mjs")
 
 $LanIp = (Get-NetIPAddress -AddressFamily IPv4 |
@@ -56,13 +67,18 @@ $LanIp = (Get-NetIPAddress -AddressFamily IPv4 |
   Select-Object -First 1).IPAddress
 
 if (-not $LanIp) { $LanIp = "<DESKTOP_LAN_IP>" }
+$MdnsHost = "$($env:COMPUTERNAME).local"
+
+Write-Host "`n=== 7) Starting worker now ==="
+Start-Process -FilePath (Join-Path $RepoDir "start-worker.bat") -WorkingDirectory $RepoDir
 
 Write-Host "`n============================================================"
-Write-Host "SETUP COMPLETE!"
-Write-Host "1) Start the worker on this Windows PC:"
-Write-Host "     .\start-worker.bat"
+Write-Host "SETUP COMPLETE! Worker is now running and auto-starts on boot."
 Write-Host ""
-Write-Host "2) Copy these lines to your Linux laptop (.env or shell):"
-Write-Host "     export RENDER_HOST=`"http://${LanIp}:${Port}`""
-Write-Host "     export RENDER_TOKEN=`"${Token}`""
+Write-Host "Copy these two lines into .env on your Linux laptop:"
+Write-Host "  RENDER_HOST=http://${LanIp}:${Port}"
+Write-Host "  RENDER_TOKEN=${Token}"
+Write-Host ""
+Write-Host "Tip: If your IP changes after reboot, you can also try mDNS:"
+Write-Host "  RENDER_HOST=http://${MdnsHost}:${Port}"
 Write-Host "============================================================`n"

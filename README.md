@@ -25,32 +25,27 @@ Offload heavy headless Chrome WebGL (3D) + FFmpeg NVENC video renders from a Lin
 1. Install the latest NVIDIA driver that supports your GPU.
 2. In **Windows Settings → Network & Internet**, set your LAN/Wi-Fi profile to **Private**.
 3. In **Windows Settings → System → Power**, set the PC to **Never sleep** when plugged in.
-4. Open **PowerShell as Administrator**, clone this repo, and run the setup script:
+4. Open **PowerShell as Administrator** and run this single setup command:
 
 ```powershell
-git clone https://github.com/hamzabenarfa/lan-gpu-render-worker.git
-cd lan-gpu-render-worker
-powershell -ExecutionPolicy Bypass -File .\setup-render-pc.ps1
+git clone https://github.com/hamzabenarfa/lan-gpu-render-worker.git; cd lan-gpu-render-worker; powershell -ExecutionPolicy Bypass -File .\setup-render-pc.ps1
 ```
+
+The script installs all tools, adds a Windows Startup shortcut so the worker runs automatically on every boot, verifies the GTX 1080 Ti, and starts the worker immediately.
 
 Confirm that the GPU check prints:
 - `OK: h264_nvenc encode succeeded`
 - `WebGL Renderer: ANGLE (NVIDIA, NVIDIA GeForce GTX 1080 Ti ...)` (not `SwiftShader`)
 
-Copy the two `export` lines printed at the end (`RENDER_HOST` and `RENDER_TOKEN`).
+Copy the two lines printed at the end (`RENDER_HOST` and `RENDER_TOKEN`) into `.env` on your Linux laptop.
 
 ---
 
-## Step 2: Start the Worker on the Windows Desktop PC
+## Step 2: Keep Running (Automatic After Setup)
 
-Double-click **`start-worker.bat`**, or run in a normal PowerShell window:
-
-```powershell
-node worker.mjs
-```
+`setup-render-pc.ps1` already starts the worker and adds `LAN-GPU-Render-Worker.lnk` to Windows Startup (`shell:startup`). To start it manually anytime, double-click **`start-worker.bat`** or run `node worker.mjs`.
 
 - Stay signed into Windows while rendering. Do not lock the screen with `Win+L`, because locking Windows can pause Direct3D 11 WebGL rendering.
-- Optional auto-start on login: press `Win+R`, run `shell:startup`, and add a shortcut to `start-worker.bat`.
 - Default concurrency is `WK=4` workers (safe under the NVIDIA consumer NVENC session limit). Override with `$env:WK="2"; node worker.mjs` if you want lower VRAM use.
 
 ---
